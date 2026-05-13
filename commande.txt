@@ -1,0 +1,1 @@
+docker run --gpus all -it --rm `--name tf-leyenda `-v "c:\Users\Agordien\Documents\PRIVATE\Projets\ds-leyenda:/tf/notebooks" `-p 8888:8888 `tensorflow/tensorflow:2.14.0-gpu-jupyter
