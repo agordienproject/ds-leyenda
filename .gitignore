@@ -1,0 +1,48 @@
+# =========================
+# Python
+# =========================
+__pycache__/
+*.pyc
+*.pyo
+
+# Environnements virtuels
+venv/
+.venv/
+venv_cesi/
+
+# =========================
+# Dataset
+# =========================
+dataset/
+
+# =========================
+# Modèles IA
+# =========================
+
+# Ignorer dossiers
+liv1/model/fakv4/
+liv1/model/fakv5/
+liv1/model/fakv6/
+
+# Ignorer fichiers modèles
+liv1/model/best_model.keras
+liv1/model/fakv2_model.h5
+liv1/model/fakv3_model.h5
+
+# =========================
+# Fichiers à ignorer
+# =========================
+cifar10_model.keras
+cuda-keyring_1.1-1_all.deb
+
+# =========================
+# VSCode / IDE
+# =========================
+.vscode/
+.idea/
+
+# =========================
+# Linux / Windows
+# =========================
+.DS_Store
+Thumbs.db
