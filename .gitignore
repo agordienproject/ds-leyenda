@@ -1,5 +1,6 @@
 # Retirer le dossier data
 data/
 data_2/
+data_3/
 .claude/
 .ipynb_checkpoints/
