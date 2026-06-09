@@ -2,5 +2,13 @@
 data/
 data_2/
 data_3/
+checkpoints_rnn/
+checkpoints_transformer/
+checkpoints_rnn_6k/
+checkpoints_tr_6k/
+*.h5
+*.data-00000-of-00001
+*.index
+*.npy
 .claude/
 .ipynb_checkpoints/
