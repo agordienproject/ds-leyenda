@@ -1,0 +1,16 @@
+{
+  "greedy": {
+    "n_samples": { "118K": 200, "6K": 100 },
+    "RNN 118K":         { "bleu1": 37.9, "bleu4":  9.1 },
+    "Transformer 118K": { "bleu1": 47.7, "bleu4": 13.7 },
+    "RNN 6K":           { "bleu1": 29.9, "bleu4":  5.5 },
+    "Transformer 6K":   { "bleu1": 42.4, "bleu4":  6.4 }
+  },
+  "beam5": {
+    "n_samples": { "118K": 50, "6K": null },
+    "RNN 118K":         { "bleu1": 57.0, "bleu4": 24.3 },
+    "Transformer 118K": { "bleu1": 72.3, "bleu4": 33.0 },
+    "RNN 6K":           null,
+    "Transformer 6K":   null
+  }
+}
