@@ -1,0 +1,613 @@
+==============================================================
+   GLOSSAIRE CNN — DS LEYENDA (Livrables 1, 2, 3)
+==============================================================
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ PARTIE 1 — DONNÉES & IMAGES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Pixel
+  La plus petite unité d'une image. En niveaux de gris, c'est une valeur
+  entre 0 (noir) et 255 (blanc). En couleur (RGB), c'est 3 valeurs (Rouge,
+  Vert, Bleu). Une image 128×128 en RGB = 49 152 valeurs.
+
+Tenseur
+  Structure de données à N dimensions utilisée en deep learning.
+  Un vecteur = tenseur 1D, une matrice = tenseur 2D, une image couleur = 3D
+  (H×W×C), un batch d'images = 4D (N×H×W×C).
+
+Normalisation
+  Mise à l'échelle des valeurs de pixels (0–255) vers [0, 1] ou [-1, 1]
+  pour que le réseau converge plus vite et de façon plus stable.
+  Méthode MinMax : diviser par 255.
+  Standardisation : soustraire la moyenne et diviser par l'écart-type.
+
+Batch (mini-batch)
+  Groupe d'images traitées simultanément pendant l'entraînement.
+  Taille typique : 32. Un batch trop petit = gradient bruité ;
+  trop grand = ne tient plus en mémoire GPU.
+  Le mini-batch est le compromis standard (32–256).
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ PARTIE 2 — COUCHES D'UN CNN
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Conv2D (Couche de Convolution)
+  Fait glisser un petit filtre (kernel) sur l'image et calcule un produit
+  scalaire à chaque position. Chaque filtre détecte un type de feature
+  (bords, textures, formes). Les poids des filtres sont appris pendant
+  l'entraînement. Paramètres clés : filters, kernel_size, padding, strides.
+
+Kernel (Filtre)
+  Petite matrice (ex: 3×3) dont les poids sont appris. Elle glisse sur
+  l'image pour détecter un type de motif (bord vertical, courbe, etc.).
+
+Padding
+  Ajout de zéros en bordure de l'image avant la convolution.
+  'same' = la sortie a la même taille que l'entrée.
+  'valid' = pas de padding, la sortie est plus petite.
+
+Strides
+  Pas de déplacement du filtre lors de la convolution. stride=1 : déplacement
+  pixel par pixel (standard). stride=2 : réduit la taille par 2.
+
+Feature Map
+  Résultat d'une convolution : la carte des activations montrant où un filtre
+  a "réagi" dans l'image.
+
+MaxPooling2D
+  Réduit la résolution spatiale en prenant la valeur maximale dans chaque
+  zone (ex: 2×2). Divise la taille par 2, réduit les calculs, et crée une
+  invariance aux petits décalages de l'objet.
+
+AveragePooling2D
+  Comme MaxPooling mais prend la moyenne au lieu du maximum.
+
+GlobalAveragePooling2D (GAP)
+  Calcule la moyenne de toute la feature map pour chaque canal.
+  (H×W×C) → (C,). Remplace Flatten pour réduire massivement le nombre
+  de paramètres et l'overfitting. Standard dans les architectures modernes.
+
+Flatten
+  Étale tous les éléments d'un tenseur 3D en un vecteur 1D.
+  (8×8×256) → (16384,). Génère beaucoup plus de paramètres que GAP.
+
+BatchNormalization (BN)
+  Normalise les activations d'une couche (moyenne ≈ 0, écart-type ≈ 1)
+  à l'intérieur de chaque mini-batch. Accélère l'entraînement, stabilise
+  les gradients, réduit légèrement l'overfitting.
+  Ordre recommandé : Conv → BN → Activation.
+
+Dropout
+  Désactive aléatoirement une proportion des neurones pendant l'entraînement
+  (les sorties sont mises à 0). Empêche les neurones de trop dépendre les uns
+  des autres. Taux typique : 0.25 pour les couches conv, 0.5 pour le Dense.
+  Désactivé à l'inférence.
+
+Dense (Couche Entièrement Connectée / Fully Connected)
+  Chaque neurone est connecté à tous les neurones de la couche précédente.
+  Formule : y = activation(xW + b). Utilisée après GAP/Flatten pour
+  combiner les features et produire les prédictions finales.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ PARTIE 3 — FONCTIONS D'ACTIVATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+ReLU (Rectified Linear Unit)
+  Fonction d'activation : si x < 0 → 0, sinon → x.
+  Standard dans les couches cachées. Simple, rapide, réduit le vanishing
+  gradient par rapport à sigmoid/tanh.
+
+Softmax
+  Convertit un vecteur de scores bruts (logits) en probabilités (somme = 1).
+  Utilisée uniquement en couche de sortie pour la classification multi-classes.
+  La classe prédite = celle avec la probabilité la plus haute.
+
+Sigmoid
+  Comprime toute valeur dans ]0, 1[. Utilisée pour la classification binaire
+  (une seule sortie). Peu utilisée dans les couches cachées (risque de
+  vanishing gradient).
+
+Logits
+  Scores bruts (non normalisés) produits par la dernière couche Dense
+  avant d'appliquer Softmax.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ PARTIE 4 — APPRENTISSAGE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Loss Function (Fonction de Perte)
+  Mesure l'écart entre les prédictions du modèle et les vraies étiquettes.
+  L'entraînement = minimiser cette valeur par la backpropagation.
+
+Categorical Crossentropy
+  Fonction de perte pour la classification multi-classes. Labels au format
+  one-hot (ex: [0, 0, 1, 0]). Pénalise fortement les erreurs confiantes.
+
+Sparse Categorical Crossentropy
+  Identique à Categorical Crossentropy mais accepte les labels sous forme
+  d'entiers (ex: 2) au lieu de one-hot. Plus pratique en pratique.
+
+Backpropagation
+  Algorithme qui calcule le gradient de la loss par rapport à chaque poids
+  du réseau (en partant de la sortie vers l'entrée). Permet de savoir dans
+  quel sens modifier chaque poids.
+
+Optimizer (Optimiseur)
+  Algorithme qui utilise le gradient calculé par la backpropagation pour
+  mettre à jour les poids du réseau.
+
+SGD (Stochastic Gradient Descent)
+  Optimiseur simple : w ← w - lr × gradient. Peut osciller ou converger
+  lentement. Rarement utilisé seul sur des CNN.
+
+Adam (Adaptive Moment Estimation)
+  Optimiseur qui combine momentum (inertie du gradient) et adaptation du
+  learning rate par paramètre. Converge vite, peu sensible au choix du LR.
+  Standard pour les CNN. LR typique : 1e-3.
+
+Momentum
+  "Inertie" du gradient : conserve une part de la direction précédente.
+  Évite les oscillations et accélère la convergence.
+
+Learning Rate (LR)
+  Contrôle la taille des pas de mise à jour des poids. Trop grand → diverge.
+  Trop petit → converge très lentement. Valeur typique pour Adam : 1e-3.
+
+Epoch
+  Un passage complet sur tout le dataset d'entraînement. Après chaque epoch
+  les poids ont vu toutes les images une fois.
+
+Step (Itération)
+  Un passage forward + backward sur un seul batch. Il y a autant de steps
+  par epoch que de batches dans le dataset.
+
+Overfitting (Surapprentissage)
+  Le modèle mémorise les données d'entraînement mais ne généralise pas :
+  train accuracy haute, val accuracy bien inférieure. Solutions : Dropout,
+  Data Augmentation, BatchNorm, EarlyStopping.
+
+Underfitting (Sous-apprentissage)
+  Le modèle est trop simple : train accuracy ET val accuracy sont basses.
+  Solutions : architecture plus profonde, plus d'epochs, LR adapté.
+
+Vanishing Gradient
+  Lors de la backpropagation sur des réseaux profonds, le gradient devient
+  de plus en plus petit et les premières couches n'apprennent plus.
+  Atténué par ReLU, BatchNorm, architectures residuelles.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ PARTIE 5 — TECHNIQUES DE RÉGULARISATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Data Augmentation
+  Génération de variantes d'images existantes (flip, rotation, zoom, contraste)
+  pour augmenter artificiellement le dataset. Le modèle ne voit jamais deux
+  fois la même image, ce qui réduit l'overfitting.
+  S'applique uniquement sur le train, jamais sur val/test.
+
+Class Weights (Poids des Classes)
+  Correction du déséquilibre entre les classes : on augmente la pénalité
+  (loss) pour les erreurs sur les classes rares. Formule :
+  w_i = N_total / (N_classes × N_i). Les classes rares ont un poids élevé.
+
+EarlyStopping
+  Callback qui arrête l'entraînement si la métrique surveillée (ex:
+  val_loss) ne s'améliore plus pendant N epochs. Évite l'overfitting et
+  gaspillage de temps. Le paramètre restore_best_weights récupère les
+  meilleurs poids.
+
+ReduceLROnPlateau
+  Callback qui divise le learning rate (ex: par 2) quand la métrique plafonne.
+  Permet de faire des pas plus fins quand le modèle arrive à saturation.
+
+ModelCheckpoint
+  Callback qui sauvegarde le modèle sur disque à chaque nouveau meilleur
+  score. save_best_only=True : ne sauvegarde que les améliorations.
+
+Régularisation L2 (Weight Decay)
+  Pénalise les poids trop grands dans la loss. Force le modèle à distribuer
+  l'information plutôt que de se concentrer sur quelques neurones.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ PARTIE 6 — PIPELINE tf.data
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+tf.data.Dataset
+  API TensorFlow pour construire un pipeline de chargement et prétraitement
+  de données efficace. Les opérations sont évaluées paresseusement (au moment
+  de l'itération). Permet de traiter des datasets qui ne tiennent pas en RAM.
+
+.map(fn)
+  Applique une fonction à chaque élément du dataset (redimensionnement,
+  normalisation, augmentation). Peut s'exécuter en parallèle.
+
+.batch(n)
+  Regroupe les éléments en mini-batches de taille n.
+
+.shuffle(buffer)
+  Mélange aléatoirement les exemples. buffer = fenêtre de mélange (plus
+  il est grand, meilleur est le mélange, mais plus de RAM consommée).
+  Doit être fait AVANT .batch() pour un mélange efficace.
+
+.prefetch(n)
+  Prépare les prochains batches en parallèle pendant que le GPU traite
+  le batch courant. Élimine les temps d'attente GPU. Valeur recommandée :
+  tf.data.AUTOTUNE.
+
+.cache()
+  Stocke le dataset en RAM après le premier passage. Les epochs suivantes
+  ne relichent pas les fichiers disque.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ PARTIE 7 — API KERAS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+model.compile()
+  Configure le modèle avant l'entraînement : choix de l'optimizer, de la
+  loss function et des métriques à afficher (accuracy, etc.).
+
+model.fit()
+  Lance l'entraînement. Retourne un objet history contenant l'évolution
+  de la loss et des métriques epoch par epoch, pour train et validation.
+
+model.evaluate()
+  Calcule la loss et les métriques sur un dataset donné (ex: test).
+  A besoin des vrais labels. Retourne [loss, accuracy].
+
+model.predict()
+  Retourne les probabilités softmax pour chaque exemple sans calculer la
+  loss. Ne nécessite pas les labels. Utilisé pour faire des prédictions.
+
+history
+  Objet retourné par model.fit() contenant les courbes d'apprentissage :
+  loss, accuracy, val_loss, val_accuracy à chaque epoch.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ PARTIE 8 — ÉVALUATION DU MODÈLE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Matrice de Confusion
+  Tableau montrant pour chaque classe réelle combien d'exemples ont été
+  classés dans chaque classe prédite. Permet de voir quelles classes se
+  confondent entre elles.
+
+TP / TN / FP / FN
+  TP (Vrai Positif) : bien prédit positif.
+  TN (Vrai Négatif) : bien prédit négatif.
+  FP (Faux Positif) : prédit positif alors que négatif (fausse alarme).
+  FN (Faux Négatif) : prédit négatif alors que positif (raté).
+
+Accuracy (Précision globale)
+  Proportion de prédictions correctes : (TP + TN) / total.
+  Trompeuse si les classes sont déséquilibrées.
+
+Précision (Precision)
+  Parmi tous les exemples prédits comme positifs, combien le sont vraiment ?
+  TP / (TP + FP). Utile quand les faux positifs sont coûteux (ex: spam).
+
+Rappel (Recall / Sensibilité)
+  Parmi tous les vrais positifs, combien ont été détectés ?
+  TP / (TP + FN). Utile quand les faux négatifs sont coûteux
+  (ex: diagnostic médical).
+
+F1-score
+  Moyenne harmonique de la Précision et du Rappel. Bon indicateur global
+  quand les classes sont déséquilibrées. F1 = 2 × (P × R) / (P + R).
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ PARTIE 9 — TRANSFER LEARNING
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Transfer Learning
+  Réutilisation d'un modèle déjà entraîné sur un grand dataset (ImageNet)
+  pour une nouvelle tâche avec peu de données. Les premières couches ont
+  déjà appris des features génériques (bords, textures, formes) réutilisables.
+
+ImageNet
+  Dataset de référence : 1,4 million d'images, 1 000 classes. Les modèles
+  pré-entraînés dessus ont appris des représentations très riches et
+  généralisables.
+
+Feature Extraction
+  Mode de transfer learning : on gèle tous les poids de la base pré-entraînée
+  et on entraîne uniquement une nouvelle tête de classification. Rapide,
+  utilisé quand le dataset est petit.
+
+Fine-Tuning
+  Mode avancé de transfer learning : après feature extraction, on dégèle
+  les dernières couches de la base et on les ré-entraîne avec un LR très
+  faible (10× à 100× plus faible). Améliore les performances si on a
+  suffisamment de données.
+
+Catastrophic Forgetting
+  Risque lors du fine-tuning avec un LR trop grand : les poids pré-entraînés
+  sont détruits et le modèle "oublie" ce qu'il savait.
+
+Geler (Freeze) des couches
+  Bloquer les poids d'une couche pour qu'ils ne soient pas mis à jour
+  pendant l'entraînement. layer.trainable = False.
+
+include_top=False
+  Paramètre Keras qui charge l'architecture sans la couche de sortie
+  (couche Dense finale avec Softmax pour les 1000 classes ImageNet).
+  Permet d'ajouter sa propre tête de classification.
+
+MobileNetV2
+  Architecture légère (3.4M params), conçue pour les appareils mobiles.
+  Bon compromis vitesse / précision quand la VRAM est limitée.
+
+EfficientNet
+  Famille d'architectures (B0→B7) offrant le meilleur compromis taille /
+  précision. EfficientNetB0 : 5.3M params, 77% sur ImageNet.
+
+ResNet50
+  Architecture avec connexions résiduelles (skip connections) qui résolvent
+  le vanishing gradient. 25M params. Référence académique solide.
+
+InceptionV3
+  Architecture qui applique des filtres de plusieurs tailles en parallèle
+  pour capturer les features à différentes échelles. 24M params.
+
+VGG16
+  Architecture ancienne (138M params), très lourde mais simple à comprendre.
+  Utilisée pour l'enseignement mais dépassée en pratique.
+
+Embedding
+  Représentation vectorielle dense d'un objet (image, mot, entité). Produite
+  par les couches intermédiaires d'un réseau. Deux objets similaires ont des
+  embeddings proches dans l'espace vectoriel.
+
+t-SNE
+  Algorithme de réduction de dimension (ex: 2048D → 2D) pour visualiser des
+  embeddings. Préserve les relations de proximité : des points proches en
+  haute dimension restent proches en 2D.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ PARTIE 10 — AUTOENCODEURS & VAE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Autoencodeur (AE)
+  Réseau qui apprend à compresser une entrée en une représentation compacte
+  (espace latent) puis à la reconstruire. Entraîné sans labels : la cible
+  est l'entrée elle-même (apprentissage auto-supervisé).
+
+Encodeur
+  Partie du réseau qui compresse l'entrée x vers l'espace latent z.
+  Composé de Conv + MaxPool ou Dense qui réduisent la dimension.
+
+Décodeur
+  Partie du réseau qui reconstruit l'entrée x̂ depuis l'espace latent z.
+  Composé de UpSampling + Conv (ou Dense) qui augmentent la dimension.
+
+Espace Latent (Bottleneck)
+  Représentation compacte et compressée au milieu de l'autoencodeur.
+  Contient les features essentielles de l'entrée. Dimension typique : 64–256.
+
+Reconstruction Loss
+  Mesure l'écart entre l'entrée x et la reconstruction x̂. MSE pour les
+  pixels continus, Binary Crossentropy (BCE) pour les pixels binaires.
+
+Autoencodeur Débruiteur
+  Variante où l'entrée est intentionnellement bruitée mais la cible est
+  l'image propre. Le réseau apprend à éliminer le bruit.
+
+VAE (Autoencodeur Variationnel)
+  Autoencodeur dont l'espace latent est probabiliste : l'encodeur produit
+  une distribution N(µ, σ²) au lieu d'un point fixe. Permet de générer
+  de nouvelles images en échantillonnant dans l'espace latent.
+
+Reparameterization Trick
+  Astuce pour que la backpropagation traverse le nœud d'échantillonnage du
+  VAE : z = µ + σ × ε, avec ε ~ N(0,1). Le gradient passe par µ et σ.
+
+KL Divergence
+  Dans le VAE, terme de perte qui force la distribution latente q(z|x) à
+  rester proche de N(0,1). Assure que l'espace latent est continu et
+  que l'interpolation entre points est possible.
+
+ELBO (Evidence Lower BOund)
+  Fonction de perte totale du VAE :
+  L_VAE = Reconstruction Loss + β × KL Divergence.
+  β contrôle l'équilibre entre reconstruction et régularisation de l'espace.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ PARTIE 11 — RNN & TRANSFORMERS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+RNN (Réseau de Neurones Récurrent)
+  Architecture pour les séquences (texte, audio, vidéo). À chaque pas de
+  temps t, il traite l'élément x_t ET l'état caché h_{t-1} (mémoire).
+  Les poids sont partagés à chaque pas. Souffre du vanishing gradient sur
+  les longues séquences.
+
+État Caché (Hidden State)
+  Mémoire interne du RNN, mise à jour à chaque pas de temps. Résumé de tout
+  ce que le réseau a vu jusqu'à présent dans la séquence.
+
+LSTM (Long Short-Term Memory)
+  RNN amélioré avec une cell state (mémoire long terme) et 3 portes pour
+  contrôler le flux d'information :
+  - Forget gate : qu'oublier de la mémoire.
+  - Input gate : quoi écrire dans la mémoire.
+  - Output gate : quoi lire depuis la mémoire.
+  Résout le vanishing gradient sur les longues séquences.
+
+GRU (Gated Recurrent Unit)
+  Version simplifiée du LSTM avec 2 portes (reset + update). Moins de
+  paramètres, performances comparables. Utilisé dans les modèles de
+  captioning (décodeur textuel).
+
+Mécanisme d'Attention (Bahdanau)
+  Permet au décodeur de se concentrer sur les parties les plus pertinentes
+  de l'entrée à chaque pas de décodage. Pour chaque mot généré, on calcule
+  des poids d'attention sur les features de l'encodeur.
+  Query = "ce que je cherche", Key = "ce que je contiens",
+  Value = "ce que je transmets". Attention = softmax(Q·K^T / sqrt(d_k)) × V
+
+Scaled Dot-Product Attention
+  Formule officielle de l'attention : Attention(Q,K,V) = softmax(Q·K^T/√d_k)·V.
+  Le facteur √d_k stabilise les gradients quand la dimension est grande.
+
+Multi-Head Attention
+  L'attention est exécutée H fois en parallèle avec des projections
+  différentes. Chaque "tête" se spécialise sur un aspect (syntaxe, sémantique,
+  coréférences…). Les résultats sont concaténés.
+
+Transformer
+  Architecture basée uniquement sur l'attention (pas de récurrence).
+  Composition : Embedding + Positional Encoding → N blocs de
+  (Multi-Head Attention + LayerNorm + Feed-Forward + LayerNorm).
+  Parallélisable, gère mieux les longues dépendances que LSTM.
+
+Positional Encoding
+  Dans un Transformer, injection de l'ordre des tokens via des vecteurs
+  sinusoïdaux. Nécessaire car l'attention seule est invariante à l'ordre.
+
+BERT
+  Transformer encodeur pré-entraîné sur de grandes quantités de texte.
+  Utilisé pour la classification de texte, Q&A, NER.
+
+ViT (Vision Transformer)
+  Application du Transformer aux images : l'image est découpée en patches
+  (ex: 14×14) traités comme des tokens. Rivalise avec les CNN sur de
+  grands datasets.
+
+CLIP (OpenAI, 2021)
+  Modèle bi-encodeur entraîné sur 400M paires (image, texte) par
+  apprentissage contrastif. Permet la classification zero-shot et la
+  recherche image↔texte.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ PARTIE 12 — CAPTIONING D'IMAGE (LIVRABLE 3)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Captioning d'Image (Image Captioning)
+  Tâche qui génère automatiquement une description textuelle d'une image.
+  Combine vision (CNN/ViT) et langage (RNN/Transformer). Problème multi-modal.
+
+Architecture Encodeur-Décodeur
+  Le CNN encode l'image en un vecteur de features z. Ce vecteur est donné
+  au RNN (décodeur) qui génère la description mot par mot.
+
+Génération Auto-régressive
+  La description est générée mot par mot : chaque mot prédit est utilisé
+  comme entrée pour prédire le suivant. Le processus commence par <start>
+  et s'arrête à <end>.
+
+Token <start> / <end>
+  Tokens spéciaux ajoutés à chaque caption pour indiquer le début
+  (<start>) et la fin (<end>) de la description. Permettent au décodeur
+  de savoir quand commencer et arrêter la génération.
+
+Tokenizer
+  Module qui convertit le texte (mots) en entiers (tokens) compréhensibles
+  par le réseau. Construit un vocabulaire (ex: 5000 mots les plus fréquents)
+  et remplace les mots rares par <unk>.
+
+<pad> / Padding de séquences
+  Token utilisé pour remplir les captions trop courtes afin que toutes
+  aient la même longueur dans le batch. La loss est maskée pour ignorer
+  les positions <pad>.
+
+<unk> (Unknown)
+  Token de remplacement pour les mots absents du vocabulaire (trop rares).
+
+Embedding (couche)
+  Couche qui transforme chaque token entier en un vecteur dense de
+  dimension embedding_dim. Appris pendant l'entraînement.
+
+CNN Encoder (dans le captioning)
+  Prend les features pré-calculées par InceptionV3 (forme 64×2048) et les
+  projette via une Dense(embedding_dim) + ReLU. Réduit la dimension tout
+  en préservant l'information spatiale.
+
+RNN Decoder (dans le captioning)
+  GRU qui reçoit à chaque pas : le mot courant (via embedding), le context
+  vector (depuis l'attention) et l'état caché précédent. Produit un score
+  pour chaque mot du vocabulaire afin de prédire le suivant.
+
+Attention Visuelle (Bahdanau)
+  Le décodeur calcule des poids d'attention sur les 64 positions spatiales
+  de l'image (8×8 original) pour concentrer son attention sur la région la
+  plus pertinente lors de la génération de chaque mot.
+
+Context Vector
+  Vecteur résultant de l'attention : somme pondérée des features image
+  par les poids d'attention. Représente "ce que le décodeur regarde dans
+  l'image" à l'instant t.
+
+Poids d'Attention
+  Vecteur de 64 valeurs (une par position spatiale) normalisées avec softmax.
+  Indique quelles zones de l'image sont les plus importantes pour prédire
+  le mot courant.
+
+Show and Tell (2014 — Google)
+  Premier grand modèle de captioning : CNN + LSTM entraînés de bout en bout.
+  Le vecteur CNN remplace le premier état caché du LSTM.
+
+Show, Attend and Tell (2015)
+  Amélioration de Show and Tell avec l'attention visuelle : le décodeur
+  se concentre sur différentes régions de l'image à chaque mot généré.
+
+MS COCO
+  Dataset de référence pour le captioning. 118k images d'entraînement,
+  chacune annotée avec 5 captions humaines en anglais.
+
+BLEU (Bilingual Evaluation Understudy)
+  Métrique qui mesure le chevauchement de n-grammes entre la description
+  générée et les références humaines. BLEU-4 (4-grammes) est le standard
+  dans les benchmarks de captioning. Score entre 0 et 1.
+
+CIDEr
+  Métrique de captioning basée sur TF-IDF sur les n-grammes : donne plus
+  de poids aux mots rares et informatifs. Standard dans les compétitions
+  MS COCO.
+
+METEOR
+  Métrique qui prend en compte les synonymes et la racinisation. Corrèle
+  mieux avec le jugement humain que BLEU.
+
+BLIP / BLIP-2
+  Modèles modernes de vision-langage. BLIP-2 utilise un Q-Former léger pour
+  connecter un encodeur visuel gelé à un LLM gelé. Seul le Q-Former est
+  entraîné → très efficace.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ DIAGNOSTIC RAPIDE — CHEAT SHEET
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Symptôme                          Diagnostic          Solutions
+─────────────────────────────────────────────────────────────────
+Train acc ↑, Val acc stagne       Overfitting         Dropout ↑, Augmentation, L2
+Train acc et Val acc basses       Underfitting        Architecture + grande, + epochs
+Val loss explose                  LR trop grand       ReduceLR, LR plus petit
+Val acc oscille beaucoup          LR trop grand       LR ↓, batch_size ↑
+Classe minoritaire mal classée    Déséquilibre        Class weights, Oversampling
+
+Architecture CNN typique :
+  Input → [Conv → BN → ReLU] × 2 → MaxPool → Dropout(0.25) → (×3 blocs)
+         → GlobalAveragePooling2D
+         → Dense(512) → BN → ReLU → Dropout(0.5)
+         → Dense(N_classes, softmax)
+
+Paramètres standards :
+  optimizer = Adam(lr=1e-3)
+  loss = sparse_categorical_crossentropy
+  batch_size = 32
+  epochs = 30-100 + EarlyStopping(patience=10)
+
+==============================================================
